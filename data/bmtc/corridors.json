@@ -1,0 +1,28 @@
+{
+  "corridors": [
+    {
+      "id": "500-series",
+      "name": "500 / 500F IT Corridor",
+      "stops": [
+        { "id": "indiranagar-bus", "name": "Indiranagar BMTC", "lat": 12.978, "lng": 77.638 },
+        { "id": "koramangala", "name": "Koramangala", "lat": 12.935, "lng": 77.624 },
+        { "id": "hsr", "name": "HSR Layout", "lat": 12.912, "lng": 77.645 },
+        { "id": "bommanahalli", "name": "Bommanahalli", "lat": 12.899, "lng": 77.62 },
+        { "id": "electronic-city", "name": "Electronic City", "lat": 12.8399, "lng": 77.677 }
+      ],
+      "fareInr": 35,
+      "avgSpeedKmh": 18
+    },
+    {
+      "id": "kia-8",
+      "name": "KIA-8 Airport",
+      "stops": [
+        { "id": "majestic-bus", "name": "Majestic", "lat": 12.9767, "lng": 77.5726 },
+        { "id": "mg-road-bus", "name": "MG Road", "lat": 12.9755, "lng": 77.6068 },
+        { "id": "indiranagar-bus-2", "name": "Indiranagar", "lat": 12.978, "lng": 77.638 }
+      ],
+      "fareInr": 280,
+      "avgSpeedKmh": 35
+    }
+  ]
+}

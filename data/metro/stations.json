@@ -1,0 +1,59 @@
+{
+  "lines": {
+    "purple": {
+      "name": "Purple Line",
+      "color": "#9333ea",
+      "stations": [
+        { "id": "wdl-kadugodi", "name": "Whitefield (Kadugodi)", "lat": 12.9958, "lng": 77.7575 },
+        { "id": "hopefarm", "name": "Hopefarm Channasandra", "lat": 12.9872, "lng": 77.7389 },
+        { "id": "pattandur", "name": "Pattandur Agrahara", "lat": 12.9785, "lng": 77.7278 },
+        { "id": "sri-sathya-sai", "name": "Sri Sathya Sai Hospital", "lat": 12.9722, "lng": 77.7186 },
+        { "id": "garudacharapalya", "name": "Garudacharapalya", "lat": 12.9655, "lng": 77.7099 },
+        { "id": "singayyanapalya", "name": "Singayyanapalya", "lat": 12.9585, "lng": 77.7011 },
+        { "id": "krishnarajapura", "name": "Krishnarajapura", "lat": 12.9512, "lng": 77.6924 },
+        { "id": "benniganahalli", "name": "Benniganahalli", "lat": 12.9435, "lng": 77.6836 },
+        { "id": "indiranagar", "name": "Indiranagar", "lat": 12.9784, "lng": 77.6408 },
+        { "id": "halasuru", "name": "Halasuru", "lat": 12.9765, "lng": 77.6266 },
+        { "id": "trinity", "name": "Trinity", "lat": 12.9732, "lng": 77.6168 },
+        { "id": "mg-road", "name": "Mahatma Gandhi Road", "lat": 12.9755, "lng": 77.6068 },
+        { "id": "cubbon-park", "name": "Cubbon Park", "lat": 12.9808, "lng": 77.5975 },
+        { "id": "vidhana-soudha", "name": "Dr BR Ambedkar Stn Vidhana Soudha", "lat": 12.9797, "lng": 77.5923 },
+        { "id": "central-college", "name": "Central College", "lat": 12.9744, "lng": 77.5845 },
+        { "id": "majestic", "name": "Nadaprabhu Kempegowda Majestic", "lat": 12.9767, "lng": 77.5726, "interchange": ["green"] },
+        { "id": "chickpete", "name": "Chickpete", "lat": 12.9675, "lng": 77.5748 },
+        { "id": "kr-market", "name": "Krishna Rajendra Market", "lat": 12.9605, "lng": 77.5745 },
+        { "id": "national-college", "name": "National College", "lat": 12.9502, "lng": 77.5738 },
+        { "id": "lalbagh", "name": "Lalbagh", "lat": 12.9465, "lng": 77.5802 },
+        { "id": "south-end", "name": "South End Circle", "lat": 12.9382, "lng": 77.5805 },
+        { "id": "jayanagar", "name": "Jayanagar", "lat": 12.9295, "lng": 77.5802 },
+        { "id": "rv-road", "name": "Rashtreeya Vidyalaya Road", "lat": 12.9215, "lng": 77.5801 },
+        { "id": "banashankari", "name": "Banashankari", "lat": 12.9125, "lng": 77.5735 },
+        { "id": "jp-nagar", "name": "JP Nagar", "lat": 12.9062, "lng": 77.5732 },
+        { "id": "yelachenahalli", "name": "Yelachenahalli", "lat": 12.8965, "lng": 77.5730 },
+        { "id": "konanakunte", "name": "Konanakunte Cross", "lat": 12.8885, "lng": 77.5625 },
+        { "id": "vajarahalli", "name": "Vajarahalli", "lat": 12.8775, "lng": 77.5525 },
+        { "id": "thalaghattapura", "name": "Thalaghattapura", "lat": 12.8685, "lng": 77.5425 },
+        { "id": "silk-institute", "name": "Silk Institute", "lat": 12.8615, "lng": 77.5375 },
+        { "id": "challaghatta", "name": "Challaghatta", "lat": 12.8545, "lng": 77.5315 }
+      ]
+    },
+    "green": {
+      "name": "Green Line",
+      "color": "#16a34a",
+      "stations": [
+        { "id": "nagasandra", "name": "Nagasandra", "lat": 13.0478, "lng": 77.5001 },
+        { "id": "dasarahalli", "name": "Dasarahalli", "lat": 13.0375, "lng": 77.5125 },
+        { "id": "rajajinagar", "name": "Rajajinagar", "lat": 13.0005, "lng": 77.5495 },
+        { "id": "srirampura", "name": "Srirampura", "lat": 12.9905, "lng": 77.5565 },
+        { "id": "majestic-green", "name": "Majestic (Green)", "lat": 12.9767, "lng": 77.5726, "interchange": ["purple"], "linkedId": "majestic" },
+        { "id": "cantonment", "name": "Cantonment", "lat": 12.9835, "lng": 77.5975 },
+        { "id": "shivajinagar", "name": "Shivajinagar", "lat": 12.9835, "lng": 77.6035 },
+        { "id": "trinity-green", "name": "Trinity (Green)", "lat": 12.9732, "lng": 77.6168, "linkedId": "trinity" },
+        { "id": "halasuru-green", "name": "Halasuru (Green)", "lat": 12.9765, "lng": 77.6266, "linkedId": "halasuru" }
+      ]
+    }
+  },
+  "interchanges": [
+    { "stationIds": ["majestic", "majestic-green"] }
+  ]
+}
