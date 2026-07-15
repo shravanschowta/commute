@@ -11,6 +11,7 @@ import { buildUberDeepLink } from "@/lib/uber/deep-link";
 import { MODE_COLORS } from "@/lib/map/style";
 import type { PlaceLocation } from "@/types/location";
 import type { CommuteRoute, TransportSegment } from "@/types/route";
+import { generateRouteExplanation } from "@/lib/routes/explanation";
 
 const MODE_ICONS: Record<string, string> = {
   walk: "directions_walk",
@@ -134,6 +135,44 @@ export function RouteDetailView({ routeId, origin, destination }: Props) {
                   </button>
                 </div>
               </div>
+
+              {/* Detailed Journey narrative guide */}
+              {(() => {
+                const exp = generateRouteExplanation(route);
+                return (
+                  <div className="mb-8 p-5 rounded-2xl bg-surface-container-low border border-outline-variant/30 flex flex-col gap-3">
+                    <div className="flex items-center gap-2 text-primary">
+                      <span className="material-symbols-outlined text-[20px]">assistant</span>
+                      <h3 className="font-mono text-xs font-bold uppercase tracking-wider">
+                        Assistant Guide & Route Narrative
+                      </h3>
+                    </div>
+                    <p className="text-sm text-on-surface leading-relaxed font-sans font-medium">
+                      {exp.narrative}
+                    </p>
+
+                    <div className="flex flex-col gap-2 pl-2 border-l-2 border-primary/20 mt-1">
+                      {exp.steps.map((step, idx) => (
+                        <div key={idx} className="text-xs text-on-surface-variant leading-relaxed flex gap-1.5 items-start">
+                          <span className="font-mono font-bold text-primary shrink-0">{idx + 1}.</span>
+                          <span>{step}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {exp.insights.length > 0 && (
+                      <div className="flex flex-col gap-1.5 mt-2 border-t border-outline-variant/20 pt-3">
+                        {exp.insights.map((insight, idx) => (
+                          <div key={idx} className="flex items-start gap-1.5 text-xs font-semibold text-secondary leading-normal">
+                            <span className="material-symbols-outlined text-[14px] mt-0.5">check_circle</span>
+                            <span>{insight}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <Timeline segments={route.transportSegments} />
             </div>

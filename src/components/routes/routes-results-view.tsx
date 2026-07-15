@@ -9,6 +9,7 @@ import { buildRouteDetailUrl } from "@/lib/navigation/build-route-detail-url";
 import { saveRouteSearch } from "@/lib/storage/routes-cache";
 import type { PlaceLocation } from "@/types/location";
 import type { CommuteRoute, RoutePreference, RouteSearchResponse } from "@/types/route";
+import { generateRouteExplanation } from "@/lib/routes/explanation";
 
 const MODE_ICONS: Record<string, string> = {
   walk: "directions_walk",
@@ -123,12 +124,64 @@ export function RoutesResultsView({
           </div>
         </div>
 
+        {activeRoute && (() => {
+          const exp = generateRouteExplanation(activeRoute);
+          return (
+            <div className="mx-4 mt-4 p-4 rounded-2xl bg-surface-container-high/50 border border-outline-variant/30 flex flex-col gap-2.5 shadow-sm">
+              <div className="flex items-center gap-1.5 text-primary">
+                <span className="material-symbols-outlined text-[18px]">assistant</span>
+                <p className="font-mono text-[10px] font-bold uppercase tracking-wider">
+                  COMMUTE EXPLANATION & INSIGHTS
+                </p>
+              </div>
+              <p className="text-xs text-on-surface leading-relaxed font-sans font-medium">
+                {exp.narrative}
+              </p>
+              
+              <div className="flex flex-col gap-1.5 pl-1.5 border-l-2 border-primary/20 mt-1">
+                {exp.steps.map((step, idx) => (
+                  <div key={idx} className="text-[11px] text-on-surface-variant leading-normal flex gap-1 items-start">
+                    <span className="font-mono font-bold text-primary shrink-0">{idx + 1}.</span>
+                    <span>{step}</span>
+                  </div>
+                ))}
+              </div>
+
+              {exp.insights.length > 0 && (
+                <div className="flex flex-col gap-1 mt-1 border-t border-outline-variant/20 pt-2">
+                  {exp.insights.map((insight, idx) => (
+                    <div key={idx} className="flex items-start gap-1 text-[10px] font-semibold text-secondary leading-tight">
+                      <span className="material-symbols-outlined text-[12px] mt-0.5">check_circle</span>
+                      <span>{insight}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         <div className="grow overflow-y-auto p-4 space-y-4 custom-scrollbar">
           {isLoading && (
             <p className="text-on-surface-variant animate-pulse">Finding 5 routes…</p>
           )}
           {error && (
             <p className="text-error">Could not load routes. Try again.</p>
+          )}
+          {!isLoading && !error && data && data.routes.length === 0 && (
+            <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+              <span className="material-symbols-outlined text-[48px] text-on-surface-variant/40">
+                directions_walk
+              </span>
+              <p className="font-bold text-on-surface">
+                No suitable route found
+              </p>
+              <p className="text-sm text-on-surface-variant max-w-[280px]">
+                No public transport route exists within the maximum walking
+                distance (1 km) of your origin or destination. Try adjusting
+                your start or end point.
+              </p>
+            </div>
           )}
           {data?.routes.map((route, index) => (
             <RouteCard
@@ -207,23 +260,44 @@ function RouteCard({
         <p className="font-bold text-primary ml-auto">{route.totalTimeMinutes} mins</p>
       </div>
 
-      <div className="flex items-center gap-2 mb-4">
-        {route.transportSegments.map((s) => (
-          <span
-            key={s.id}
-            className={`material-symbols-outlined ${
-              s.mode === "metro" ? "text-primary" : "text-on-surface-variant"
-            }`}
-            style={
-              s.mode === "metro"
-                ? { fontVariationSettings: "'FILL' 1" }
-                : undefined
-            }
-          >
-            {MODE_ICONS[s.mode]}
-          </span>
-        ))}
-        <div className="h-px grow bg-outline-variant mx-2" />
+      {/* Per-leg walk + transit breakdown */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-4 text-xs font-mono text-on-surface-variant">
+        {route.transportSegments.map((s) => {
+          if (s.mode === "walk") {
+            const meters = s.distanceMeters;
+            const label =
+              meters >= 1000
+                ? `${(meters / 1000).toFixed(1)} km`
+                : `${meters} m`;
+            return (
+              <span
+                key={s.id}
+                className="flex items-center gap-0.5 bg-surface-container px-1.5 py-0.5 rounded"
+              >
+                <span className="material-symbols-outlined text-[13px]">directions_walk</span>
+                {label}
+              </span>
+            );
+          }
+          return (
+            <span
+              key={s.id}
+              className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded ${
+                s.mode === "metro"
+                  ? "bg-primary/10 text-primary"
+                  : s.mode === "bus"
+                    ? "bg-secondary/10 text-secondary"
+                    : "bg-tertiary-container/30 text-on-tertiary-container"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[13px]">
+                {MODE_ICONS[s.mode]}
+              </span>
+              {s.lineOrRoute ?? s.mode}
+            </span>
+          );
+        })}
+        <div className="h-px grow bg-outline-variant mx-1" />
         <p className="font-bold">₹{route.totalCostInr}</p>
       </div>
 

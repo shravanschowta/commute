@@ -1,5 +1,6 @@
 import stationsData from "../../../data/metro/stations.json";
 import { haversineMeters } from "@/lib/geo/haversine";
+import { MAX_WALK_DISTANCE_METERS } from "@/lib/routes/walking-constants";
 import type { MetroLineId, MetroPath, MetroStation } from "@/lib/metro/types";
 
 const MINUTES_PER_STATION = 2.5;
@@ -47,6 +48,20 @@ export function findNearestStation(point: {
     const bestD = haversineMeters(point, best);
     return d < bestD ? s : best;
   });
+}
+
+/**
+ * Returns the nearest metro station only if it is within `maxMeters` of `point`.
+ * Returns `null` when no station exists within the radius — callers must treat
+ * this as "no viable transit leg" and skip or reject the route.
+ */
+export function findNearestStationWithin(
+  point: { lat: number; lng: number },
+  maxMeters: number = MAX_WALK_DISTANCE_METERS,
+): MetroStation | null {
+  const nearest = findNearestStation(point);
+  const distance = haversineMeters(point, nearest);
+  return distance <= maxMeters ? nearest : null;
 }
 
 function stationsOnLine(line: MetroLineId): MetroStation[] {

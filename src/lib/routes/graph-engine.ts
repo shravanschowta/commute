@@ -6,12 +6,14 @@ import { haversineMeters, walkingMinutes } from "@/lib/geo/haversine";
 import {
   findMetroPath,
   findNearestStation,
+  findNearestStationWithin,
   metroFareInr,
   metroLineLabel,
   metroTravelMinutes,
 } from "@/lib/metro/graph";
 import type { MetroStation } from "@/lib/metro/types";
 import { rankRoutes } from "@/lib/routes/scoring";
+import { validateWalkingDistance } from "@/lib/routes/validate-walking";
 import type {
   CommuteRoute,
   RoutePreference,
@@ -65,9 +67,12 @@ async function buildMetroWalkRoute(
   badge: string,
   reason: string,
   tags: RoutePreference[],
-): Promise<CommuteRoute> {
-  const oStation = findNearestStation(origin);
-  const dStation = findNearestStation(destination);
+): Promise<CommuteRoute | null> {
+  // Use radius-capped finder — returns null if nearest station is > 1 km away
+  const oStation = findNearestStationWithin(origin);
+  const dStation = findNearestStationWithin(destination);
+  if (!oStation || !dStation) return null;
+
   const path = findMetroPath(oStation, dStation);
 
   const segments: TransportSegment[] = [];
@@ -118,8 +123,12 @@ async function buildBusMetroWalk(
   if (!corridorMatch) return null;
 
   const { corridor, fromStop, toStop } = corridorMatch;
-  const metroAfterBus = findNearestStation(toStop);
-  const dStation = findNearestStation(destination);
+
+  // Metro leg after bus: use capped finder from toStop → destination
+  const metroAfterBus = findNearestStationWithin(toStop);
+  const dStation = findNearestStationWithin(destination);
+  if (!metroAfterBus || !dStation) return null;
+
   const path = findMetroPath(metroAfterBus, dStation);
 
   const segments: TransportSegment[] = [];
@@ -234,9 +243,14 @@ async function buildUberDirect(
 async function buildUberMetroWalk(
   origin: RouteSearchRequest["origin"],
   destination: RouteSearchRequest["destination"],
-): Promise<CommuteRoute> {
+): Promise<CommuteRoute | null> {
+  // Uber routes to metro need a reachable metro station at the destination end
+  const dStation = findNearestStationWithin(destination);
+  if (!dStation) return null;
+
+  // For the origin side we use Uber (no walking), so use uncapped finder
   const oStation = findNearestStation(origin);
-  const dStation = findNearestStation(destination);
+
   const path = findMetroPath(oStation, dStation);
 
   const uberLeg = estimateUber(origin, {
@@ -393,38 +407,45 @@ export class GraphRouteEngine implements RouteEngine {
     segCounter = 0;
     const { origin, destination, preference } = request;
 
-    const candidates: CommuteRoute[] = [];
-
-    candidates.push(
-      await buildMetroWalkRoute(
+    const rawCandidates: Array<CommuteRoute | null> = await Promise.all([
+      buildMetroWalkRoute(
         origin,
         destination,
         "Best Value",
         "Walk → Metro → Walk",
         ["balanced", "cheapest"],
       ),
+      buildBusMetroWalk(origin, destination),
+      buildUberDirect(origin, destination),
+      buildUberMetroWalk(origin, destination),
+      buildBusOnly(origin, destination),
+      buildMetroWalkRoute(
+        origin,
+        destination,
+        "Eco",
+        "Low-emission metro corridor",
+        ["cheapest"],
+      ),
+    ]);
+
+    // Remove nulls (routes that had no reachable stops within 1 km)
+    const nonNull = rawCandidates.filter(
+      (r): r is CommuteRoute => r !== null,
     );
 
-    const busMetro = await buildBusMetroWalk(origin, destination);
-    if (busMetro) candidates.push(busMetro);
+    // Apply the Eco badge carbon boost (last metro-walk route, if it survived)
+    const ecoCandidate = nonNull.find((r) => r.badge === "Eco");
+    if (ecoCandidate) {
+      ecoCandidate.carbonSavedKg = Math.max(ecoCandidate.carbonSavedKg, 1.5);
+    }
 
-    candidates.push(await buildUberDirect(origin, destination));
-    candidates.push(await buildUberMetroWalk(origin, destination));
+    // Final safety gate: reject any route where a walk segment exceeds 1 km
+    const valid = nonNull.filter((r) => {
+      const result = validateWalkingDistance(r);
+      return result.valid;
+    });
 
-    const busOnly = await buildBusOnly(origin, destination);
-    if (busOnly) candidates.push(busOnly);
-
-    const walkHeavy = await buildMetroWalkRoute(
-      origin,
-      destination,
-      "Eco",
-      "Low-emission metro corridor",
-      ["cheapest"],
-    );
-    walkHeavy.carbonSavedKg = Math.max(walkHeavy.carbonSavedKg, 1.5);
-    candidates.push(walkHeavy);
-
-    const unique = dedupeRoutes(candidates);
+    const unique = dedupeRoutes(valid);
     const ranked = rankRoutes(unique, preference);
 
     ranked.forEach((r, i) => {
